@@ -75,6 +75,9 @@ storeComps.CheckOutPage = {
         productTotal: function () {
             return this.productsInCart.orderItemList ? this.getCartValueByItemEnum('ItemProduct') : 0;
         },
+        productCount: function(){
+            return this.productsInCart.orderItemList ? this.getCartCountByItemEnum('ItemProduct') : 0;
+        },
         //TODO Getting the applied promo codes should be done server-side
         appliedPromoCodes: function () {
             return this.productsInCart.orderItemList ?
@@ -104,6 +107,11 @@ storeComps.CheckOutPage = {
                 var value = c.itemTypeEnumId == itemEnum ? c.unitAmount * c.quantity : 0;
                 return a + value;
             }, 0);
+        },
+        getCartCountByItemEnum: function(itemEnum){
+            return this.productsInCart.orderItemList.reduce(function (acc, item) {
+                return item.itemTypeEnumId == itemEnum ? acc + item.quantity : acc + 0;
+            }, 0)
         },
         notAddressSeleted: function() {
             return (this.addressOption == null || this.addressOption == ''
@@ -167,15 +175,17 @@ storeComps.CheckOutPage = {
                             }
                         }
 
-                        // Look for shipping option
-                        var option = this.listShippingOptions ?
-                            this.listShippingOptions.find(function (item) { return item.shipmentMethodDescription == "Ground Parcel" }) : 0;
+                        if(this.shippingMethod.shipmentMethodDescription === undefined){
+                            // Look for shipping option
+                            var option = this.listShippingOptions ?
+                                this.listShippingOptions.find(function (item) { return item.shipmentMethodDescription == "Ground Parcel" }) : 0;
 
-                        // Update the shipping option value
-                        if (!!option) {
-                            option.shippingTotal = parseFloat(this.shippingItemPrice).toFixed(2);
-                            this.shippingOption = option.carrierPartyId + ':' + option.shipmentMethodEnumId;
-                            this.shippingMethod = option;
+                            // Update the shipping option value
+                            if (!!option) {
+                                option.shippingTotal = parseFloat(this.shippingItemPrice).toFixed(2);
+                                this.shippingOption = option.carrierPartyId + ':' + option.shipmentMethodEnumId;
+                                this.shippingMethod = option;
+                            }
                         }
                         resolve();
                     }.bind(this));
